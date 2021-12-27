@@ -1,4 +1,17 @@
-const { BaseKonnector, requestFactory, log } = require('cozy-konnector-libs')
+process.env.SENTRY_DSN =
+  process.env.SENTRY_DSN ||
+  'https://ee6ac433dc6f4a9684c8b2a4d3b2b859@errors.cozycloud.cc/19'
+
+const {
+  BaseKonnector,
+  requestFactory,
+  log,
+  utils,
+  cozyClient
+} = require('cozy-konnector-libs')
+
+const models = cozyClient.new.models
+const { Qualification } = models.document
 
 const request = requestFactory({
   debug: false,
@@ -19,12 +32,13 @@ async function start(fields, cozyParameters) {
   await authenticate.bind(this)(fields.login, fields.password)
 
   log('info', 'Successfully logged in')
+
   log('info', 'Fetching the list of documents')
+
+  const documents = await parseBills()
 
   log('info', 'Parsing list of documents')
 
-  const documents = await parseBills()
-  log('info', documents)
   log('info', 'Saving data to Cozy')
 
   await this.saveFiles(documents.downloadFiles, fields, {
@@ -32,16 +46,8 @@ async function start(fields, cozyParameters) {
     identifiers: ['Luko'],
     sourceAccount: this.accountId,
     sourceAccountIdentifier: fields.login,
-    contentType: 'application/pdf',
-    fileAttributes: {
-      contentAuthor: 'fr-luko.eu'
-    }
+    contentType: 'application/pdf'
   })
-  // await this.saveBills(documents, fields, {
-  //   linkBankOperations: false,
-  //   identifiers: ['Luko'],
-
-  // })
 }
 
 async function authenticate(username, password) {
@@ -63,9 +69,6 @@ async function authenticate(username, password) {
     },
     resolveWithFullResponse: true
   })
-  // authResp = authResp.request.body
-  // log('info', JSON.parse(authResp))
-  // log('info', authResp.request.response.body.data.login.user.connection)
 }
 
 async function parseBills() {
@@ -89,21 +92,41 @@ async function parseBills() {
   authResp = authResp.map(authResp => ({
     ...authResp,
     date: new Date(),
+    issueDate: authResp.date,
     currency: 'EUR',
-    filename: `${authResp.date}_${VENDOR}_${authResp.amount}EUR${
-      authResp.vendorRef ? '_' + authResp.vendorRef : ''
-    }.pdf`,
+    filename: `${utils.formatDate(authResp.date)}_${VENDOR}_${
+      authResp.amount
+    }EUR${authResp.vendorRef ? '_' + authResp.vendorRef : ''}.pdf`,
     vendor: VENDOR
   }))
 
-  //  log('info',authResp)
   const downloadFiles = []
   for (let i = 0, l = authResp.length; i < l; i++) {
+    const stringyfiedAmount = `${authResp[i].amount}`
     const fileToDownload = {
+      currency: authResp[i].currency,
+      amount: `${
+        stringyfiedAmount.length > 2
+          ? stringyfiedAmount.slice(0, 2) + '_' + stringyfiedAmount.slice(2, 4)
+          : stringyfiedAmount
+      }`,
+      date: authResp[i].date,
       fileurl: authResp[i].downloadUrl,
-      filename: authResp[i].filename
+      filename: authResp[i].filename,
+      vendor: VENDOR,
+      fileAttributes: {
+        metadata: {
+          contentAuthor: 'fr-luko.eu',
+          issueDate: utils.formatDate(authResp[i].issueDate),
+          datetime: utils.formatDate(authResp[i].date),
+          datetimeLabel: `issueDate`,
+          isSubscription: true,
+          carbonCopy: true,
+          qualification: Qualification.getByLabel('house_insurance')
+        }
+      }
     }
     downloadFiles.push(fileToDownload)
   }
-  return { authResp, downloadFiles }
+  return { downloadFiles }
 }

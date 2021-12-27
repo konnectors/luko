@@ -23,6 +23,9 @@
   ],
   "screenshots": [],
   "permissions": {
+    "carbon_copy": {
+      "type": "io.cozy.certified.carbon_copy"
+    },
     "bank operations": {
       "type": "io.cozy.bank.operations"
     },
@@ -46,6 +49,9 @@
       "short_description": "Récupère la liste de livres",
       "long_description": "Récupère la liste de livre sur le site exemple",
       "permissions": {
+        "carboncopy": {
+          "description": "Utilisé pour certifier que vos fichiers sont copie conforme avec les documents d'origine"
+        },
         "bank operations": {
           "description": "Utilisé pour relier les factures à des operations bancaires"
         },
@@ -64,6 +70,9 @@
       "short_description": "Fetch a list of books",
       "long_description": "Fetch a list of books from the example website",
       "permissions": {
+        "carboncopy": {
+          "description": "Use to certify your files are the exact copy of the originals"
+        },
         "bank operations": {
           "description": "Required to link bank operations to bills"
         },
@@ -79,6 +88,16 @@
       }
     }
   },
+  "qualification_labels": [
+    "house_insurance"
+  ],
+  "features": [
+    "LOGIN_OK",
+    "METADATA_DEDUP",
+    "CARBON_COPY",
+    "DOC_QUALIFICATION_V2",
+    "SENTRY_V2"
+  ],
   "banksTransactionRegExp": "\\bbooks\\b",
   "manifest_version": "2"
 }
