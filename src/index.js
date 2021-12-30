@@ -6,12 +6,12 @@ const {
   BaseKonnector,
   requestFactory,
   log,
-  utils
-  // cozyClient
+  utils,
+  cozyClient
 } = require('cozy-konnector-libs')
 
-// const models = cozyClient.new.models
-// const { Qualification } = models.document
+const models = cozyClient.new.models
+const { Qualification } = models.document
 
 const request = requestFactory({
   debug: false,
@@ -38,7 +38,14 @@ async function start(fields, cozyParameters) {
 
   log('info', 'Fetching the list of documents')
   const documents = await parseDocuments()
-  log('info', documents)
+
+  log('info', 'Saving documents data to Cozy')
+  await this.saveFiles(documents, fields, {
+    identifiers: ['Luko'],
+    sourceAccount: this.accountId,
+    sourceAccountIdentifier: fields.login,
+    contentType: 'application/pdf'
+  })
   log('info', 'Saving bills data to Cozy')
   await this.saveBills(bills.downloadFiles, fields, {
     linkBankOperations: false,
@@ -98,13 +105,13 @@ async function parseBills() {
     ).toFixed(2)}EUR.pdf`,
     vendor: VENDOR
   }))
-  log('info', (billsDocs[1].amount / 100).toFixed(2))
+
   const downloadFiles = []
   for (let i = 0, l = billsDocs.length; i < l; i++) {
     const fileToDownload = {
       currency: billsDocs[i].currency,
-      amount: `${(billsDocs[i].amount / 100).toFixed(2)}`,
-      date: billsDocs[i].issueDate,
+      amount: parseFloat((billsDocs[i].amount / 100).toFixed(2)),
+      date: billsDocs[i].date,
       fileurl: billsDocs[i].downloadUrl,
       filename: billsDocs[i].filename,
       vendor: VENDOR,
@@ -115,8 +122,8 @@ async function parseBills() {
           datetime: utils.formatDate(billsDocs[i].date),
           datetimeLabel: `issueDate`,
           isSubscription: true,
-          carbonCopy: true
-          // qualification: Qualification.getByLabel('house_insurance')
+          carbonCopy: true,
+          qualification: Qualification.getByLabel('house_insurance')
         }
       }
     }
@@ -148,11 +155,85 @@ async function parseDocuments() {
   for (const doc of documents) {
     docResult.push(doc)
   }
-  log('info', docResult)
+  // log('info', docResult)
 
   const userResult = []
   for (const user of users) {
-    userResult.push(...user.insuranceDocuments)
+    userResult.push(user)
   }
-  log('info', userResult)
+  // log('info', userResult)
+
+  const userDocsResult = []
+  for (const user of users) {
+    userDocsResult.push(...user.insuranceDocuments)
+  }
+  // log('info', userDocsResult)
+
+  let usersFilesToDownload = []
+  let genFilesToDownload = []
+
+  for (let i = 0; i < docResult.length; i++) {
+    genFilesToDownload.push({
+      fileurl: docResult[i].url,
+      filename:
+        `${docResult[i].title
+          .toLowerCase()
+          .replace(/ /g, '_')
+          .replace(/'/, '')}` +
+        '_' +
+        `${docResult[i].trackingCode}` +
+        '.pdf',
+      date: new Date(),
+      vendor: VENDOR,
+      fileAttributes: {
+        metadata: {
+          contentAuthor: 'fr-luko.eu',
+          datetime: utils.formatDate(new Date()),
+          datetimeLabel: `issueDate`,
+          carbonCopy: true,
+          qualification: Qualification.getByLabel('house_insurance')
+        }
+      }
+    })
+  }
+
+  for (let i = 0; i < userResult.length; i++) {
+    let usersFiles = []
+    for (let j = 0; j < userDocsResult.length; j++) {
+      let url
+      if (userDocsResult[j].url.includes(`${userResult[i].id}`)) {
+        url = userDocsResult[j].url
+        usersFiles.push({
+          fileurl: url,
+          filename:
+            `${userResult[i].id}` +
+            '_' +
+            `${userResult[i].lastname}` +
+            `${userResult[i].firstname}` +
+            '_' +
+            `${userDocsResult[j].trackingCode}` +
+            '.pdf',
+          date: new Date(),
+          vendor: VENDOR,
+          fileAttributes: {
+            metadata: {
+              contentAuthor: 'fr-luko.eu',
+              datetime: utils.formatDate(new Date()),
+              datetimeLabel: `issueDate`,
+              carbonCopy: true,
+              qualification: Qualification.getByLabel('house_insurance')
+            }
+          }
+        })
+      }
+    }
+
+    usersFilesToDownload.push(usersFiles)
+  }
+  let filesToDownload = []
+  filesToDownload.push(...genFilesToDownload)
+  for (let i = 0; i < usersFilesToDownload.length; i++) {
+    filesToDownload.push(...usersFilesToDownload[i])
+  }
+  return filesToDownload
 }

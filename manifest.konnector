@@ -1,14 +1,14 @@
 {
   "version": "1.0.0",
-  "name": "Connector template",
+  "name": "luko",
   "type": "konnector",
   "language": "node",
   "icon": "icon.png",
-  "slug": "template",
-  "source": "git@github.com:konnectors/template.git",
+  "slug": "luko",
+  "source": "git@github.com:konnectors/luko.git",
   "editor": "Cozy",
-  "vendor_link": "Link to the target website",
-  "categories": ["others"],
+  "vendor_link": "https://www.luko.eu/",
+  "categories": ["insurance"],
   "fields": {
     "login": {
       "type": "text"
@@ -46,8 +46,8 @@
   "langs": ["fr", "en"],
   "locales": {
     "fr": {
-      "short_description": "Récupère la liste de livres",
-      "long_description": "Récupère la liste de livre sur le site exemple",
+      "short_description": "Récupère la liste de vos documents personnel",
+      "long_description": "Récupère la liste des documents et des factures de votre compte Luko",
       "permissions": {
         "carboncopy": {
           "description": "Utilisé pour certifier que vos fichiers sont copie conforme avec les documents d'origine"
@@ -67,8 +67,8 @@
       }
     },
     "en": {
-      "short_description": "Fetch a list of books",
-      "long_description": "Fetch a list of books from the example website",
+      "short_description": "Fetch your personnal documents",
+      "long_description": "Fetch the list of bills and personnal documents from your Luko account",
       "permissions": {
         "carboncopy": {
           "description": "Use to certify your files are the exact copy of the originals"
