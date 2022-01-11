@@ -46,8 +46,8 @@
   "langs": ["fr", "en"],
   "locales": {
     "fr": {
-      "short_description": "Récupère la liste de vos documents personnels",
-      "long_description": "Récupère la liste des documents et des factures de votre compte Luko",
+      "short_description": "Accédez directement à vos attestations et factures Luko.",
+      "long_description": "Accédez directement à vos attestations et toutes les factures liées à votre assurance habitation dans votre Cozy Drive personnel avec le connecteur Luko.",
       "permissions": {
         "carboncopy": {
           "description": "Utilisé pour certifier que vos fichiers sont copie conforme avec les documents d'origine"
@@ -67,8 +67,8 @@
       }
     },
     "en": {
-      "short_description": "Fetch your personnal documents",
-      "long_description": "Fetch the list of bills and personnal documents from your Luko account",
+      "short_description": "Fetch your personnal documents.",
+      "long_description": "Fetch the list of bills and personnal documents from your Luko account.",
       "permissions": {
         "carboncopy": {
           "description": "Use to certify your files are the exact copy of the originals"
