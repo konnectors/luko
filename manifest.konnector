@@ -46,7 +46,7 @@
   "langs": ["fr", "en"],
   "locales": {
     "fr": {
-      "short_description": "Récupère la liste de vos documents personnel",
+      "short_description": "Récupère la liste de vos documents personnels",
       "long_description": "Récupère la liste des documents et des factures de votre compte Luko",
       "permissions": {
         "carboncopy": {
